@@ -267,3 +267,23 @@ value mlcurses_wgetch(value win)
 
    CAMLreturn(Val_int(ch));
 }
+
+value mlcurses_getnstr_inner(int n)
+{
+   CAMLparam1(n);
+   int max_length = Int_val(n);
+   char* v = (char *) malloc(sizeof(char) * (max_length + 1));
+
+   caml_enter_blocking_section();
+   value err = getnstr(v, max_length);
+   caml_leave_blocking_section();
+
+   value str = caml_copy_string(!err ? v : "\0");
+   free(v);
+
+   CAMLlocal1(ret);
+   ret = caml_alloc_tuple(2);
+   Store_field(ret, 0, str); \
+   Store_field(ret, 1, Val_bool(err != ERR)); \
+   CAMLreturn(ret);
+}
